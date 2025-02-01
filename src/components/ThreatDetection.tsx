@@ -38,9 +38,9 @@ export default function ThreatDetection() {
       case "high":
         return "destructive";
       case "medium":
-        return "warning";
-      default:
         return "secondary";
+      default:
+        return "outline";
     }
   };
 
