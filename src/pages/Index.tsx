@@ -5,6 +5,8 @@ import { Upload } from "lucide-react";
 import RecordsAnalysis from "@/components/RecordsAnalysis";
 import ThreatDetection from "@/components/ThreatDetection";
 import DataUploader from "@/components/DataUploader";
+import CDRModule from "@/components/CDRModule";
+import IPDRModule from "@/components/IPDRModule";
 
 export default function Index() {
   return (
@@ -44,11 +46,19 @@ export default function Index() {
         <DataUploader />
       </div>
 
-      <Tabs defaultValue="analysis" className="space-y-4">
+      <Tabs defaultValue="cdr" className="space-y-4">
         <TabsList>
+          <TabsTrigger value="cdr">CDR Analysis</TabsTrigger>
+          <TabsTrigger value="ipdr">IPDR Analysis</TabsTrigger>
           <TabsTrigger value="analysis">Records Analysis</TabsTrigger>
           <TabsTrigger value="threats">Threat Detection</TabsTrigger>
         </TabsList>
+        <TabsContent value="cdr">
+          <CDRModule />
+        </TabsContent>
+        <TabsContent value="ipdr">
+          <IPDRModule />
+        </TabsContent>
         <TabsContent value="analysis">
           <RecordsAnalysis />
         </TabsContent>
