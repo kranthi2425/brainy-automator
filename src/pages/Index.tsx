@@ -1,14 +1,61 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Upload } from "lucide-react";
+import RecordsAnalysis from "@/components/RecordsAnalysis";
+import ThreatDetection from "@/components/ThreatDetection";
+import DataUploader from "@/components/DataUploader";
 
-const Index = () => {
+export default function Index() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
+    <div className="container mx-auto p-4">
+      <h1 className="text-4xl font-bold mb-8">CDR/IPDR Analysis Dashboard</h1>
+      
+      <div className="grid gap-4 md:grid-cols-3 mb-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Total Records</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-semibold">0</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Threats Detected</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-semibold text-destructive">0</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Analysis Status</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-semibold text-muted-foreground">Ready</p>
+          </CardContent>
+        </Card>
       </div>
+
+      <div className="mb-8">
+        <DataUploader />
+      </div>
+
+      <Tabs defaultValue="analysis" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="analysis">Records Analysis</TabsTrigger>
+          <TabsTrigger value="threats">Threat Detection</TabsTrigger>
+        </TabsList>
+        <TabsContent value="analysis">
+          <RecordsAnalysis />
+        </TabsContent>
+        <TabsContent value="threats">
+          <ThreatDetection />
+        </TabsContent>
+      </Tabs>
     </div>
   );
-};
-
-export default Index;
+}
