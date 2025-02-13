@@ -44,6 +44,65 @@ export type Database = {
           },
         ]
       }
+      calls: {
+        Row: {
+          call_type: string
+          callee_id: string
+          caller_id: string
+          case_id: string | null
+          created_at: string | null
+          duration: unknown | null
+          end_time: string | null
+          geographic_location: string | null
+          id: string
+          metadata: Json | null
+          platform: Database["public"]["Enums"]["platform_type"]
+          start_time: string
+          status: Database["public"]["Enums"]["call_status"]
+          updated_at: string | null
+        }
+        Insert: {
+          call_type: string
+          callee_id: string
+          caller_id: string
+          case_id?: string | null
+          created_at?: string | null
+          duration?: unknown | null
+          end_time?: string | null
+          geographic_location?: string | null
+          id?: string
+          metadata?: Json | null
+          platform: Database["public"]["Enums"]["platform_type"]
+          start_time?: string
+          status?: Database["public"]["Enums"]["call_status"]
+          updated_at?: string | null
+        }
+        Update: {
+          call_type?: string
+          callee_id?: string
+          caller_id?: string
+          case_id?: string | null
+          created_at?: string | null
+          duration?: unknown | null
+          end_time?: string | null
+          geographic_location?: string | null
+          id?: string
+          metadata?: Json | null
+          platform?: Database["public"]["Enums"]["platform_type"]
+          start_time?: string
+          status?: Database["public"]["Enums"]["call_status"]
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calls_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cases: {
         Row: {
           case_number: string
@@ -384,13 +443,31 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      call_analytics: {
+        Row: {
+          avg_duration_seconds: number | null
+          call_count: number | null
+          call_type: string | null
+          geographic_location: string | null
+          platform: Database["public"]["Enums"]["platform_type"] | null
+          status: Database["public"]["Enums"]["call_status"] | null
+          time_bucket: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      call_status:
+        | "initiated"
+        | "ringing"
+        | "in_progress"
+        | "completed"
+        | "failed"
+        | "missed"
+      platform_type: "voip" | "pstn" | "sip" | "mobile" | "desktop" | "iot"
     }
     CompositeTypes: {
       [_ in never]: never
