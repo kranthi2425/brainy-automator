@@ -29,11 +29,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Call, PlatformType } from "@/types/cdr";
 import { useToast } from "@/components/ui/use-toast";
 import { format } from "date-fns";
+import { DateRange } from "react-day-picker";
 
 export default function CDRModule() {
   const [calls, setCalls] = useState<Call[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dateRange, setDateRange] = useState<{ from: Date; to: Date } | undefined>();
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [platform, setPlatform] = useState<PlatformType | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
@@ -61,7 +62,14 @@ export default function CDRModule() {
       const { data, error } = await query.order("start_time", { ascending: false });
 
       if (error) throw error;
-      setCalls(data);
+      
+      // Transform the data to ensure it matches the Call interface
+      const transformedData = (data || []).map((call): Call => ({
+        ...call,
+        duration: call.duration?.toString() || undefined,
+      }));
+      
+      setCalls(transformedData);
     } catch (error) {
       console.error("Error fetching calls:", error);
       toast({
