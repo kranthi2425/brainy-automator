@@ -26,16 +26,18 @@ import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { Call, PlatformType } from "@/types/cdr";
+import { Call, PlatformType, PrivacyLevel } from "@/types/cdr";
 import { useToast } from "@/components/ui/use-toast";
 import { format } from "date-fns";
 import { DateRange } from "react-day-picker";
+import { Shield } from "lucide-react";
 
 export default function CDRModule() {
   const [calls, setCalls] = useState<Call[]>([]);
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [platform, setPlatform] = useState<PlatformType | "all">("all");
+  const [privacyLevel, setPrivacyLevel] = useState<PrivacyLevel | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
 
@@ -53,6 +55,10 @@ export default function CDRModule() {
 
       if (platform !== "all") {
         query = query.eq("platform", platform);
+      }
+
+      if (privacyLevel !== "all") {
+        query = query.eq("privacy_level", privacyLevel);
       }
 
       if (searchQuery) {
@@ -104,7 +110,20 @@ export default function CDRModule() {
   // Fetch initial data and when filters change
   useEffect(() => {
     fetchCalls();
-  }, [dateRange, platform, searchQuery]);
+  }, [dateRange, platform, privacyLevel, searchQuery]);
+
+  const getPrivacyBadgeColor = (level?: PrivacyLevel) => {
+    switch (level) {
+      case 'sensitive':
+        return 'text-red-500';
+      case 'private':
+        return 'text-yellow-500';
+      case 'public':
+        return 'text-green-500';
+      default:
+        return 'text-gray-500';
+    }
+  };
 
   return (
     <Card>
@@ -140,6 +159,20 @@ export default function CDRModule() {
                 <SelectItem value="iot">IoT</SelectItem>
               </SelectContent>
             </Select>
+            <Select
+              value={privacyLevel}
+              onValueChange={(value: PrivacyLevel | "all") => setPrivacyLevel(value)}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Privacy Level" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Levels</SelectItem>
+                <SelectItem value="public">Public</SelectItem>
+                <SelectItem value="private">Private</SelectItem>
+                <SelectItem value="sensitive">Sensitive</SelectItem>
+              </SelectContent>
+            </Select>
             <div className="flex-1">
               <Input
                 placeholder="Search by caller or callee ID"
@@ -151,6 +184,7 @@ export default function CDRModule() {
               onClick={() => {
                 setDateRange(undefined);
                 setPlatform("all");
+                setPrivacyLevel("all");
                 setSearchQuery("");
               }}
               variant="outline"
@@ -162,6 +196,7 @@ export default function CDRModule() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Privacy</TableHead>
                 <TableHead>Timestamp</TableHead>
                 <TableHead>Caller ID</TableHead>
                 <TableHead>Callee ID</TableHead>
@@ -175,19 +210,22 @@ export default function CDRModule() {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center">
+                  <TableCell colSpan={9} className="text-center">
                     Loading...
                   </TableCell>
                 </TableRow>
               ) : calls.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center">
+                  <TableCell colSpan={9} className="text-center">
                     No call records found
                   </TableCell>
                 </TableRow>
               ) : (
                 calls.map((call) => (
                   <TableRow key={call.id}>
+                    <TableCell>
+                      <Shield className={`h-4 w-4 ${getPrivacyBadgeColor(call.privacy_level)}`} />
+                    </TableCell>
                     <TableCell>
                       {format(new Date(call.start_time), "yyyy-MM-dd HH:mm:ss")}
                     </TableCell>

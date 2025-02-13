@@ -44,51 +44,117 @@ export type Database = {
           },
         ]
       }
+      call_audit_logs: {
+        Row: {
+          action_details: Json | null
+          action_timestamp: string | null
+          action_type: string
+          actor_id: string | null
+          actor_ip: string | null
+          call_id: string | null
+          created_at: string | null
+          id: string
+        }
+        Insert: {
+          action_details?: Json | null
+          action_timestamp?: string | null
+          action_type: string
+          actor_id?: string | null
+          actor_ip?: string | null
+          call_id?: string | null
+          created_at?: string | null
+          id?: string
+        }
+        Update: {
+          action_details?: Json | null
+          action_timestamp?: string | null
+          action_type?: string
+          actor_id?: string | null
+          actor_ip?: string | null
+          call_id?: string | null
+          created_at?: string | null
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "call_audit_logs_call_id_fkey"
+            columns: ["call_id"]
+            isOneToOne: false
+            referencedRelation: "calls"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "call_audit_logs_call_id_fkey"
+            columns: ["call_id"]
+            isOneToOne: false
+            referencedRelation: "calls_for_retention"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       calls: {
         Row: {
+          anonymized: boolean | null
           call_type: string
           callee_id: string
           caller_id: string
           case_id: string | null
+          consent_status: string | null
           created_at: string | null
+          data_jurisdiction: string | null
+          data_retention_period: unknown | null
           duration: unknown | null
           end_time: string | null
           geographic_location: string | null
           id: string
+          last_accessed_at: string | null
           metadata: Json | null
           platform: Database["public"]["Enums"]["platform_type"]
+          privacy_level: string | null
           start_time: string
           status: Database["public"]["Enums"]["call_status"]
           updated_at: string | null
         }
         Insert: {
+          anonymized?: boolean | null
           call_type: string
           callee_id: string
           caller_id: string
           case_id?: string | null
+          consent_status?: string | null
           created_at?: string | null
+          data_jurisdiction?: string | null
+          data_retention_period?: unknown | null
           duration?: unknown | null
           end_time?: string | null
           geographic_location?: string | null
           id?: string
+          last_accessed_at?: string | null
           metadata?: Json | null
           platform: Database["public"]["Enums"]["platform_type"]
+          privacy_level?: string | null
           start_time?: string
           status?: Database["public"]["Enums"]["call_status"]
           updated_at?: string | null
         }
         Update: {
+          anonymized?: boolean | null
           call_type?: string
           callee_id?: string
           caller_id?: string
           case_id?: string | null
+          consent_status?: string | null
           created_at?: string | null
+          data_jurisdiction?: string | null
+          data_retention_period?: unknown | null
           duration?: unknown | null
           end_time?: string | null
           geographic_location?: string | null
           id?: string
+          last_accessed_at?: string | null
           metadata?: Json | null
           platform?: Database["public"]["Enums"]["platform_type"]
+          privacy_level?: string | null
           start_time?: string
           status?: Database["public"]["Enums"]["call_status"]
           updated_at?: string | null
@@ -452,6 +518,36 @@ export type Database = {
           platform: Database["public"]["Enums"]["platform_type"] | null
           status: Database["public"]["Enums"]["call_status"] | null
           time_bucket: string | null
+        }
+        Relationships: []
+      }
+      calls_for_retention: {
+        Row: {
+          created_at: string | null
+          data_jurisdiction: string | null
+          data_retention_period: unknown | null
+          id: string | null
+          last_accessed_at: string | null
+          privacy_level: string | null
+          start_time: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          data_jurisdiction?: string | null
+          data_retention_period?: unknown | null
+          id?: string | null
+          last_accessed_at?: string | null
+          privacy_level?: string | null
+          start_time?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          data_jurisdiction?: string | null
+          data_retention_period?: unknown | null
+          id?: string | null
+          last_accessed_at?: string | null
+          privacy_level?: string | null
+          start_time?: string | null
         }
         Relationships: []
       }
