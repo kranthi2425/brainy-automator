@@ -7,30 +7,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { DateRangePicker } from "@/components/ui/date-range-picker";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { Call, PlatformType, PrivacyLevel } from "@/types/cdr";
 import { useToast } from "@/components/ui/use-toast";
-import { format } from "date-fns";
 import { DateRange } from "react-day-picker";
-import { Shield } from "lucide-react";
+import CallFilters from "./calls/CallFilters";
+import CallTable from "./calls/CallTable";
 
 export default function CDRModule() {
   const [calls, setCalls] = useState<Call[]>([]);
@@ -46,7 +28,6 @@ export default function CDRModule() {
       setLoading(true);
       let query = supabase.from("calls").select("*");
 
-      // Apply filters
       if (dateRange?.from && dateRange?.to) {
         query = query
           .gte("start_time", dateRange.from.toISOString())
@@ -62,19 +43,23 @@ export default function CDRModule() {
       }
 
       if (searchQuery) {
-        query = query.or(`caller_id.ilike.%${searchQuery}%,callee_id.ilike.%${searchQuery}%`);
+        query = query.or(
+          `caller_id.ilike.%${searchQuery}%,callee_id.ilike.%${searchQuery}%`
+        );
       }
 
-      const { data, error } = await query.order("start_time", { ascending: false });
+      const { data, error } = await query.order("start_time", {
+        ascending: false,
+      });
 
       if (error) throw error;
-      
+
       // Transform the data to ensure it matches the Call interface
-      const transformedData = (data || []).map((call): Call => ({
+      const transformedData: Call[] = (data || []).map((call) => ({
         ...call,
-        duration: call.duration?.toString() || undefined,
+        duration: call.duration?.toString() || null,
       }));
-      
+
       setCalls(transformedData);
     } catch (error) {
       console.error("Error fetching calls:", error);
@@ -88,7 +73,6 @@ export default function CDRModule() {
     }
   };
 
-  // Set up real-time subscription
   useEffect(() => {
     const subscription = supabase
       .channel("calls")
@@ -97,7 +81,7 @@ export default function CDRModule() {
         { event: "*", schema: "public", table: "calls" },
         (payload) => {
           console.log("Real-time update:", payload);
-          fetchCalls(); // Refresh the data
+          fetchCalls();
         }
       )
       .subscribe();
@@ -107,23 +91,9 @@ export default function CDRModule() {
     };
   }, []);
 
-  // Fetch initial data and when filters change
   useEffect(() => {
     fetchCalls();
   }, [dateRange, platform, privacyLevel, searchQuery]);
-
-  const getPrivacyBadgeColor = (level?: PrivacyLevel) => {
-    switch (level) {
-      case 'sensitive':
-        return 'text-red-500';
-      case 'private':
-        return 'text-yellow-500';
-      case 'public':
-        return 'text-green-500';
-      default:
-        return 'text-gray-500';
-    }
-  };
 
   return (
     <Card>
@@ -135,112 +105,17 @@ export default function CDRModule() {
       </CardHeader>
       <CardContent>
         <div className="flex flex-col gap-4">
-          <div className="flex flex-wrap gap-4">
-            <div className="flex-1">
-              <DateRangePicker
-                value={dateRange}
-                onChange={setDateRange}
-              />
-            </div>
-            <Select
-              value={platform}
-              onValueChange={(value: PlatformType | "all") => setPlatform(value)}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select platform" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Platforms</SelectItem>
-                <SelectItem value="voip">VoIP</SelectItem>
-                <SelectItem value="pstn">PSTN</SelectItem>
-                <SelectItem value="sip">SIP</SelectItem>
-                <SelectItem value="mobile">Mobile</SelectItem>
-                <SelectItem value="desktop">Desktop</SelectItem>
-                <SelectItem value="iot">IoT</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select
-              value={privacyLevel}
-              onValueChange={(value: PrivacyLevel | "all") => setPrivacyLevel(value)}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Privacy Level" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Levels</SelectItem>
-                <SelectItem value="public">Public</SelectItem>
-                <SelectItem value="private">Private</SelectItem>
-                <SelectItem value="sensitive">Sensitive</SelectItem>
-              </SelectContent>
-            </Select>
-            <div className="flex-1">
-              <Input
-                placeholder="Search by caller or callee ID"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <Button
-              onClick={() => {
-                setDateRange(undefined);
-                setPlatform("all");
-                setPrivacyLevel("all");
-                setSearchQuery("");
-              }}
-              variant="outline"
-            >
-              Reset Filters
-            </Button>
-          </div>
-
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Privacy</TableHead>
-                <TableHead>Timestamp</TableHead>
-                <TableHead>Caller ID</TableHead>
-                <TableHead>Callee ID</TableHead>
-                <TableHead>Duration</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Platform</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Location</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableRow>
-                  <TableCell colSpan={9} className="text-center">
-                    Loading...
-                  </TableCell>
-                </TableRow>
-              ) : calls.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={9} className="text-center">
-                    No call records found
-                  </TableCell>
-                </TableRow>
-              ) : (
-                calls.map((call) => (
-                  <TableRow key={call.id}>
-                    <TableCell>
-                      <Shield className={`h-4 w-4 ${getPrivacyBadgeColor(call.privacy_level)}`} />
-                    </TableCell>
-                    <TableCell>
-                      {format(new Date(call.start_time), "yyyy-MM-dd HH:mm:ss")}
-                    </TableCell>
-                    <TableCell>{call.caller_id}</TableCell>
-                    <TableCell>{call.callee_id}</TableCell>
-                    <TableCell>{call.duration || "In Progress"}</TableCell>
-                    <TableCell>{call.status}</TableCell>
-                    <TableCell>{call.platform}</TableCell>
-                    <TableCell>{call.call_type}</TableCell>
-                    <TableCell>{call.geographic_location || "N/A"}</TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+          <CallFilters
+            dateRange={dateRange}
+            setDateRange={setDateRange}
+            platform={platform}
+            setPlatform={setPlatform}
+            privacyLevel={privacyLevel}
+            setPrivacyLevel={setPrivacyLevel}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+          />
+          <CallTable calls={calls} loading={loading} />
         </div>
       </CardContent>
     </Card>

@@ -1,4 +1,3 @@
-
 export type CallStatus = 'initiated' | 'ringing' | 'in_progress' | 'completed' | 'failed' | 'missed';
 export type PlatformType = 'voip' | 'pstn' | 'sip' | 'mobile' | 'desktop' | 'iot';
 export type PrivacyLevel = 'public' | 'private' | 'sensitive';
@@ -9,23 +8,23 @@ export interface Call {
   caller_id: string;
   callee_id: string;
   start_time: string;
-  end_time?: string;
-  duration?: string;
+  end_time?: string | null;
+  duration?: string | null;
   status: CallStatus;
   platform: PlatformType;
   call_type: string;
-  geographic_location?: string;
-  case_id?: string;
-  metadata?: Record<string, any>;
+  geographic_location?: string | null;
+  case_id?: string | null;
+  metadata?: any;  // Changed from Record<string, any> to any to match Supabase's Json type
   created_at: string;
   updated_at: string;
   // New compliance fields
-  data_retention_period?: string;
-  privacy_level?: PrivacyLevel;
-  data_jurisdiction?: string;
-  consent_status?: ConsentStatus;
-  last_accessed_at?: string;
-  anonymized?: boolean;
+  data_retention_period?: string | null;
+  privacy_level?: PrivacyLevel | null;
+  data_jurisdiction?: string | null;
+  consent_status?: ConsentStatus | null;
+  last_accessed_at?: string | null;
+  anonymized?: boolean | null;
 }
 
 export interface CallAnalytics {
