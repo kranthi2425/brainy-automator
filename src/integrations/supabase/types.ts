@@ -275,6 +275,48 @@ export type Database = {
           },
         ]
       }
+      customer_locations: {
+        Row: {
+          address: string
+          city: string
+          country: string
+          created_at: string | null
+          customer_name: string
+          id: string
+          latitude: number | null
+          location_type: string
+          longitude: number | null
+          state: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          address: string
+          city: string
+          country: string
+          created_at?: string | null
+          customer_name: string
+          id?: string
+          latitude?: number | null
+          location_type: string
+          longitude?: number | null
+          state?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          address?: string
+          city?: string
+          country?: string
+          created_at?: string | null
+          customer_name?: string
+          id?: string
+          latitude?: number | null
+          location_type?: string
+          longitude?: number | null
+          state?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       devices: {
         Row: {
           case_id: string | null
@@ -428,6 +470,76 @@ export type Database = {
           },
         ]
       }
+      feasibility_studies: {
+        Row: {
+          bandwidth_unit: Database["public"]["Enums"]["bandwidth_unit"]
+          bandwidth_value: number
+          connection_type: Database["public"]["Enums"]["connection_type"]
+          created_at: string | null
+          customer_id: string | null
+          destination_location: string | null
+          equipment_details: Json | null
+          id: string
+          notes: string | null
+          source_location: string | null
+          status: string | null
+          study_name: string
+          updated_at: string | null
+        }
+        Insert: {
+          bandwidth_unit: Database["public"]["Enums"]["bandwidth_unit"]
+          bandwidth_value: number
+          connection_type: Database["public"]["Enums"]["connection_type"]
+          created_at?: string | null
+          customer_id?: string | null
+          destination_location?: string | null
+          equipment_details?: Json | null
+          id?: string
+          notes?: string | null
+          source_location?: string | null
+          status?: string | null
+          study_name: string
+          updated_at?: string | null
+        }
+        Update: {
+          bandwidth_unit?: Database["public"]["Enums"]["bandwidth_unit"]
+          bandwidth_value?: number
+          connection_type?: Database["public"]["Enums"]["connection_type"]
+          created_at?: string | null
+          customer_id?: string | null
+          destination_location?: string | null
+          equipment_details?: Json | null
+          id?: string
+          notes?: string | null
+          source_location?: string | null
+          status?: string | null
+          study_name?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feasibility_studies_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customer_locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feasibility_studies_destination_location_fkey"
+            columns: ["destination_location"]
+            isOneToOne: false
+            referencedRelation: "customer_locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feasibility_studies_source_location_fkey"
+            columns: ["source_location"]
+            isOneToOne: false
+            referencedRelation: "customer_locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       network_info: {
         Row: {
           case_id: string | null
@@ -556,6 +668,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      bandwidth_unit: "Mbps" | "Gbps" | "Tbps"
       call_status:
         | "initiated"
         | "ringing"
@@ -563,6 +676,7 @@ export type Database = {
         | "completed"
         | "failed"
         | "missed"
+      connection_type: "DIA" | "EPL" | "MPLS" | "P2P" | "WAVELENGTH"
       platform_type: "voip" | "pstn" | "sip" | "mobile" | "desktop" | "iot"
     }
     CompositeTypes: {
