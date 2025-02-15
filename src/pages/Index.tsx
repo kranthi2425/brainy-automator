@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -7,11 +8,17 @@ import ThreatDetection from "@/components/ThreatDetection";
 import DataUploader from "@/components/DataUploader";
 import CDRModule from "@/components/CDRModule";
 import IPDRModule from "@/components/IPDRModule";
+import { Link } from "react-router-dom";
 
 export default function Index() {
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-4xl font-bold mb-8">CDR/IPDR Analysis Dashboard</h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-4xl font-bold">CDR/IPDR Analysis Dashboard</h1>
+        <Button variant="outline" asChild>
+          <Link to="/feasibility">Feasibility Studies</Link>
+        </Button>
+      </div>
       
       <div className="grid gap-4 md:grid-cols-3 mb-8">
         <Card>
