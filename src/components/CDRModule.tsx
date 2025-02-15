@@ -71,11 +71,11 @@ export default function CDRModule() {
         created_at: call.created_at,
         updated_at: call.updated_at,
         data_retention_period: call.data_retention_period?.toString() || null,
-        privacy_level: call.privacy_level,
+        privacy_level: (call.privacy_level as PrivacyLevel) || null,
         data_jurisdiction: call.data_jurisdiction,
         consent_status: call.consent_status,
         last_accessed_at: call.last_accessed_at,
-        anonymized: call.anonymized
+        anonymized: call.anonymized || false
       }));
 
       setCalls(transformedData);
