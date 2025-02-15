@@ -50,9 +50,23 @@ serve(async (req) => {
         // Add line number to error messages for better debugging
         const lineNumber = index + 2; // +2 because we skip header and array is 0-based
         
-        let start_time: string;
+        // Validate required fields
+        if (!record[0]) {
+          throw new Error(`Line ${lineNumber}: caller_id is required`);
+        }
+        if (!record[1]) {
+          throw new Error(`Line ${lineNumber}: callee_id is required`);
+        }
+        if (!record[2]) {
+          throw new Error(`Line ${lineNumber}: start_time is required`);
+        }
+        
+        let start_time: string | null;
         try {
           start_time = parseDate(record[2]);
+          if (!start_time) {
+            throw new Error(`Line ${lineNumber}: Invalid start_time`);
+          }
         } catch (error) {
           throw new Error(`Line ${lineNumber}: Invalid start_time - ${error.message}`);
         }
@@ -66,7 +80,7 @@ serve(async (req) => {
           }
         }
 
-        return {
+        const call = {
           caller_id: record[0],
           callee_id: record[1],
           start_time,
@@ -77,6 +91,13 @@ serve(async (req) => {
           geographic_location: record[7] || null,
           privacy_level: record[8] || 'public'
         };
+
+        // Final validation of the object
+        if (!call.caller_id || !call.callee_id || !call.start_time) {
+          throw new Error(`Line ${lineNumber}: Missing required fields`);
+        }
+
+        return call;
       } catch (error) {
         throw new Error(`Error processing record: ${error.message}`);
       }
@@ -88,6 +109,7 @@ serve(async (req) => {
       .select()
 
     if (error) {
+      console.error('Database insertion error:', error);
       return new Response(
         JSON.stringify({ error: 'Failed to insert records', details: error }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
