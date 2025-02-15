@@ -1,8 +1,9 @@
 
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { LatLngTuple } from 'leaflet';
+import { LatLngExpression, Map as LeafletMap } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import { useRef } from 'react';
 
 // Fix for default marker icons in react-leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -27,10 +28,12 @@ interface LocationMapProps {
 }
 
 export default function LocationMap({ locations }: LocationMapProps) {
+  const mapRef = useRef<LeafletMap>(null);
+
   // Find center point from all locations or default to a world view
   const validLocations = locations.filter(loc => loc.latitude && loc.longitude);
-  const defaultCenter: LatLngTuple = [0, 0];
-  const center: LatLngTuple = validLocations.length > 0
+  const defaultCenter: LatLngExpression = [0, 0];
+  const center: LatLngExpression = validLocations.length > 0
     ? [
         validLocations.reduce((sum, loc) => sum + (loc.latitude || 0), 0) / validLocations.length,
         validLocations.reduce((sum, loc) => sum + (loc.longitude || 0), 0) / validLocations.length
@@ -40,6 +43,7 @@ export default function LocationMap({ locations }: LocationMapProps) {
   return (
     <div className="h-[500px] w-full rounded-lg overflow-hidden border">
       <MapContainer
+        ref={mapRef}
         center={center}
         zoom={2}
         scrollWheelZoom={false}
@@ -53,7 +57,7 @@ export default function LocationMap({ locations }: LocationMapProps) {
           location.latitude && location.longitude ? (
             <Marker
               key={location.id}
-              position={[location.latitude, location.longitude] as LatLngTuple}
+              position={[location.latitude, location.longitude] as LatLngExpression}
             >
               <Popup>
                 <div className="p-2">
