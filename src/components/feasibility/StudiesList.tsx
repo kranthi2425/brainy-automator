@@ -60,7 +60,7 @@ export default function StudiesList() {
                 {study.destination?.city}, {study.destination?.country}
               </TableCell>
               <TableCell>
-                <Badge variant={study.status === 'pending' ? 'secondary' : 'success'}>
+                <Badge variant={study.status === 'pending' ? 'secondary' : 'default'}>
                   {study.status}
                 </Badge>
               </TableCell>
