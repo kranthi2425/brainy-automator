@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import { Call, PlatformType, PrivacyLevel } from "@/types/cdr";
+import { Call, PlatformType, PrivacyLevel, ConsentStatus } from "@/types/cdr";
 import { useToast } from "@/components/ui/use-toast";
 import { DateRange } from "react-day-picker";
 import CallFilters from "./calls/CallFilters";
@@ -55,28 +55,38 @@ export default function CDRModule() {
       if (error) throw error;
 
       // Transform the data to ensure it matches the Call interface
-      const transformedData: Call[] = (data || []).map((call) => ({
-        id: call.id,
-        caller_id: call.caller_id,
-        callee_id: call.callee_id,
-        start_time: call.start_time,
-        end_time: call.end_time,
-        duration: call.duration?.toString() || null,
-        status: call.status,
-        platform: call.platform,
-        call_type: call.call_type,
-        geographic_location: call.geographic_location,
-        case_id: call.case_id,
-        metadata: call.metadata,
-        created_at: call.created_at,
-        updated_at: call.updated_at,
-        data_retention_period: call.data_retention_period?.toString() || null,
-        privacy_level: (call.privacy_level as PrivacyLevel) || null,
-        data_jurisdiction: call.data_jurisdiction,
-        consent_status: call.consent_status,
-        last_accessed_at: call.last_accessed_at,
-        anonymized: call.anonymized || false
-      }));
+      const transformedData: Call[] = (data || []).map((call) => {
+        // Helper function to validate consent status
+        const validateConsentStatus = (status: string | null): ConsentStatus | null => {
+          const validStatuses: ConsentStatus[] = ['obtained', 'pending', 'not_required'];
+          return (status && validStatuses.includes(status as ConsentStatus)) 
+            ? status as ConsentStatus 
+            : null;
+        };
+
+        return {
+          id: call.id,
+          caller_id: call.caller_id,
+          callee_id: call.callee_id,
+          start_time: call.start_time,
+          end_time: call.end_time,
+          duration: call.duration?.toString() || null,
+          status: call.status,
+          platform: call.platform,
+          call_type: call.call_type,
+          geographic_location: call.geographic_location,
+          case_id: call.case_id,
+          metadata: call.metadata,
+          created_at: call.created_at,
+          updated_at: call.updated_at,
+          data_retention_period: call.data_retention_period?.toString() || null,
+          privacy_level: (call.privacy_level as PrivacyLevel) || null,
+          data_jurisdiction: call.data_jurisdiction,
+          consent_status: validateConsentStatus(call.consent_status),
+          last_accessed_at: call.last_accessed_at,
+          anonymized: call.anonymized || false
+        };
+      });
 
       setCalls(transformedData);
     } catch (error) {
