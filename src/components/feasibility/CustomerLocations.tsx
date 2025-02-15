@@ -10,6 +10,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
+import LocationMap from "./LocationMap";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function CustomerLocations() {
   const { data: locations, isLoading } = useQuery({
@@ -30,29 +32,42 @@ export default function CustomerLocations() {
   }
 
   return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Customer Name</TableHead>
-            <TableHead>Location Type</TableHead>
-            <TableHead>Address</TableHead>
-            <TableHead>City</TableHead>
-            <TableHead>Country</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {locations?.map((location) => (
-            <TableRow key={location.id}>
-              <TableCell>{location.customer_name}</TableCell>
-              <TableCell>{location.location_type}</TableCell>
-              <TableCell>{location.address}</TableCell>
-              <TableCell>{location.city}</TableCell>
-              <TableCell>{location.country}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+    <Tabs defaultValue="table" className="space-y-4">
+      <TabsList>
+        <TabsTrigger value="table">Table View</TabsTrigger>
+        <TabsTrigger value="map">Map View</TabsTrigger>
+      </TabsList>
+      
+      <TabsContent value="table">
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Customer Name</TableHead>
+                <TableHead>Location Type</TableHead>
+                <TableHead>Address</TableHead>
+                <TableHead>City</TableHead>
+                <TableHead>Country</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {locations?.map((location) => (
+                <TableRow key={location.id}>
+                  <TableCell>{location.customer_name}</TableCell>
+                  <TableCell>{location.location_type}</TableCell>
+                  <TableCell>{location.address}</TableCell>
+                  <TableCell>{location.city}</TableCell>
+                  <TableCell>{location.country}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </TabsContent>
+
+      <TabsContent value="map">
+        {locations && <LocationMap locations={locations} />}
+      </TabsContent>
+    </Tabs>
   );
 }
