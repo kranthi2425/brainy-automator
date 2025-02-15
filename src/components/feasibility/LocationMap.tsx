@@ -28,8 +28,6 @@ interface LocationMapProps {
 }
 
 export default function LocationMap({ locations }: LocationMapProps) {
-  const mapRef = useRef<LeafletMap>(null);
-
   // Find center point from all locations or default to a world view
   const validLocations = locations.filter(loc => loc.latitude && loc.longitude);
   const defaultCenter: LatLngExpression = [0, 0];
@@ -43,7 +41,6 @@ export default function LocationMap({ locations }: LocationMapProps) {
   return (
     <div className="h-[500px] w-full rounded-lg overflow-hidden border">
       <MapContainer
-        ref={mapRef}
         center={center}
         zoom={2}
         scrollWheelZoom={false}
