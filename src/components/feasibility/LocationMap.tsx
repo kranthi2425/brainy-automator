@@ -28,23 +28,26 @@ interface LocationMapProps {
 
 export default function LocationMap({ locations }: LocationMapProps) {
   // Find center point from all locations or default to a world view
-  const center = locations.length > 0
+  const validLocations = locations.filter(loc => loc.latitude && loc.longitude);
+  const defaultCenter: [number, number] = [0, 0];
+  const center = validLocations.length > 0
     ? [
-        locations.reduce((sum, loc) => sum + (loc.latitude || 0), 0) / locations.length,
-        locations.reduce((sum, loc) => sum + (loc.longitude || 0), 0) / locations.length
+        validLocations.reduce((sum, loc) => sum + (loc.latitude || 0), 0) / validLocations.length,
+        validLocations.reduce((sum, loc) => sum + (loc.longitude || 0), 0) / validLocations.length
       ] as [number, number]
-    : [0, 0] as [number, number];
+    : defaultCenter;
 
   return (
     <div className="h-[500px] w-full rounded-lg overflow-hidden border">
       <MapContainer
         center={center}
         zoom={2}
-        className="h-full w-full"
+        scrollWheelZoom={false}
+        style={{ height: '100%', width: '100%' }}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         {locations.map((location) => (
           location.latitude && location.longitude ? (
