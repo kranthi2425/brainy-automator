@@ -578,6 +578,42 @@ export type Database = {
           },
         ]
       }
+      threats: {
+        Row: {
+          created_at: string | null
+          data_volume: number | null
+          description: string
+          detection_method: string
+          id: string
+          severity: string
+          source_ip: string | null
+          timestamp: string
+          type: string
+        }
+        Insert: {
+          created_at?: string | null
+          data_volume?: number | null
+          description: string
+          detection_method: string
+          id?: string
+          severity: string
+          source_ip?: string | null
+          timestamp?: string
+          type: string
+        }
+        Update: {
+          created_at?: string | null
+          data_volume?: number | null
+          description?: string
+          detection_method?: string
+          id?: string
+          severity?: string
+          source_ip?: string | null
+          timestamp?: string
+          type?: string
+        }
+        Relationships: []
+      }
       timeline_events: {
         Row: {
           case_id: string | null
