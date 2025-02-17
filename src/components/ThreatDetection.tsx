@@ -1,148 +1,92 @@
-
-import { useEffect, useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Shield } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-
-interface Threat {
-  id: string;
-  timestamp: string;
-  type: string;
-  severity: "high" | "medium" | "low";
-  description: string;
-  source_ip?: string;
-  data_volume?: number;
-  detection_method: "ml" | "rule-based";
-}
+import { Threat, ThreatSeverity } from "@/types/cdr";
 
 export default function ThreatDetection() {
   const [threats, setThreats] = useState<Threat[]>([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchThreats = async () => {
-      const { data, error } = await supabase
-        .from("threats")
-        .select("*")
-        .order("timestamp", { ascending: false })
-        .limit(10);
+    // Fetch initial threats
+    fetchThreats();
 
-      if (error) {
-        console.error("Error fetching threats:", error);
-        return;
-      }
-
-      setThreats(data || []);
-      setLoading(false);
-    };
-
-    // Set up real-time subscription for new threats
-    const subscription = supabase
-      .channel("threats")
+    // Subscribe to real-time updates
+    const channel = supabase
+      .channel('public:threats')
       .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "threats",
-        },
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'threats' },
         (payload) => {
-          setThreats((current) => [payload.new as Threat, ...current].slice(0, 10));
+          setThreats(current => [...current, payload.new as Threat]);
         }
       )
       .subscribe();
 
-    fetchThreats();
-
     return () => {
-      subscription.unsubscribe();
+      supabase.removeChannel(channel);
     };
   }, []);
 
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case "high":
-        return "destructive";
-      case "medium":
-        return "secondary";
-      default:
-        return "outline";
+  const fetchThreats = async () => {
+    const { data, error } = await supabase
+      .from('threats')
+      .select('*')
+      .order('timestamp', { ascending: false })
+      .limit(10);
+
+    if (error) {
+      console.error('Error fetching threats:', error);
+      return;
     }
+
+    // Cast the severity to ensure it matches the ThreatSeverity type
+    const typedThreats = data.map(threat => ({
+      ...threat,
+      severity: threat.severity.toLowerCase() as ThreatSeverity
+    }));
+    
+    setThreats(typedThreats);
   };
 
-  const getMethodBadgeColor = (method: string) => {
-    return method === "ml" ? "default" : "secondary";
+  const getSeverityColor = (severity: ThreatSeverity) => {
+    switch (severity) {
+      case "high":
+        return "text-red-500";
+      case "medium":
+        return "text-yellow-500";
+      case "low":
+        return "text-green-500";
+      default:
+        return "text-gray-500";
+    }
   };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Detected Threats</CardTitle>
-        <CardDescription>
-          Real-time anomaly detection and security threats
-        </CardDescription>
+        <CardTitle>Threat Detection</CardTitle>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Timestamp</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Severity</TableHead>
-              <TableHead>Method</TableHead>
-              <TableHead>Source IP</TableHead>
-              <TableHead>Description</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center">
-                  Loading threats...
-                </TableCell>
-              </TableRow>
-            ) : threats.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center">
-                  No threats detected
-                </TableCell>
-              </TableRow>
-            ) : (
-              threats.map((threat) => (
-                <TableRow key={threat.id}>
-                  <TableCell>{new Date(threat.timestamp).toLocaleString()}</TableCell>
-                  <TableCell>{threat.type}</TableCell>
-                  <TableCell>
-                    <Badge variant={getSeverityColor(threat.severity)}>
-                      {threat.severity.toUpperCase()}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={getMethodBadgeColor(threat.detection_method)}>
-                      {threat.detection_method === "ml" ? "ML" : "Rule-Based"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{threat.source_ip || "N/A"}</TableCell>
-                  <TableCell>{threat.description}</TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+        <ul>
+          {threats.map((threat) => (
+            <li key={threat.id} className="mb-4 border rounded-md p-4">
+              <div className="flex items-center space-x-2">
+                <Shield className={`h-4 w-4 ${getSeverityColor(threat.severity)}`} />
+                <span className="font-semibold">{threat.type}</span>
+                <span className="text-sm text-gray-500">
+                  ({new Date(threat.timestamp).toLocaleString()})
+                </span>
+              </div>
+              <p className="text-sm mt-1">
+                {threat.description} (Data Volume: {threat.data_volume})
+              </p>
+              {threat.source_ip && (
+                <p className="text-xs text-gray-600 mt-1">Source IP: {threat.source_ip}</p>
+              )}
+            </li>
+          ))}
+        </ul>
       </CardContent>
     </Card>
   );

@@ -47,3 +47,18 @@ export interface CallAuditLog {
   action_details?: Record<string, any>;
   created_at: string;
 }
+
+export type ThreatSeverity = "high" | "medium" | "low";
+export type DetectionMethod = "ml" | "rule-based";
+
+export interface Threat {
+  id: string;
+  timestamp: string;
+  type: string;
+  severity: ThreatSeverity;
+  description: string;
+  source_ip: string | null;
+  data_volume: number | null;
+  detection_method: DetectionMethod;
+  created_at: string;
+}

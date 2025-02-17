@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import {
   Card,
@@ -70,7 +69,6 @@ export default function RecordsAnalysis() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("calls")
-        .select("platform, count")
         .select("platform")
         .order("platform");
 
@@ -95,16 +93,15 @@ export default function RecordsAnalysis() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("calls")
-        .select("caller_id, count(*)")
-        .group("caller_id")
-        .order("count", { ascending: false })
+        .select('caller_id, count:caller_id')
+        .order('count', { ascending: false })
         .limit(10);
 
       if (error) throw error;
 
-      return data?.map((item) => ({
+      return data?.map((item: any) => ({
         name: item.caller_id,
-        calls: item.count,
+        calls: parseInt(item.count),
       }));
     },
   });
