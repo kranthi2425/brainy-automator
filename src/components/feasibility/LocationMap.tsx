@@ -1,7 +1,23 @@
 
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { LatLngExpression } from 'leaflet';
+import { LatLng, LatLngExpression } from 'leaflet';
 import "leaflet/dist/leaflet.css";
+import L from 'leaflet';
+
+// Fix leaflet default marker icon
+// Get the default icon image URLs
+import icon from 'leaflet/dist/images/marker-icon.png';
+import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+
+// Set up the default icon
+let DefaultIcon = L.icon({
+  iconUrl: icon,
+  shadowUrl: iconShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+});
+
+L.Marker.prototype.options.icon = DefaultIcon;
 
 interface LocationMapProps {
   locations: Array<{
@@ -15,7 +31,7 @@ interface LocationMapProps {
 
 export default function LocationMap({ locations }: LocationMapProps) {
   // Set default center if no locations
-  const defaultCenter: LatLngExpression = [0, 0];
+  const defaultCenter: LatLng = new L.LatLng(0, 0);
   const defaultZoom = 2;
 
   return (
@@ -30,19 +46,22 @@ export default function LocationMap({ locations }: LocationMapProps) {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
-        {locations.map((location) => (
-          <Marker
-            key={location.id}
-            position={[location.latitude, location.longitude] as LatLngExpression}
-          >
-            <Popup>
-              <div className="p-2">
-                <h3 className="font-bold">{location.customer_name}</h3>
-                <p className="text-sm text-gray-600">{location.location_type}</p>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+        {locations.map((location) => {
+          const position = new L.LatLng(location.latitude, location.longitude);
+          return (
+            <Marker
+              key={location.id}
+              position={position}
+            >
+              <Popup>
+                <div className="p-2">
+                  <h3 className="font-bold">{location.customer_name}</h3>
+                  <p className="text-sm text-gray-600">{location.location_type}</p>
+                </div>
+              </Popup>
+            </Marker>
+          );
+        })}
       </MapContainer>
     </div>
   );
