@@ -1,6 +1,6 @@
 
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { LatLng, LatLngExpression } from 'leaflet';
+import { LatLng } from 'leaflet';
 import "leaflet/dist/leaflet.css";
 import L from 'leaflet';
 
@@ -30,8 +30,8 @@ interface LocationMapProps {
 }
 
 export default function LocationMap({ locations }: LocationMapProps) {
-  // Set default center if no locations
-  const defaultCenter: LatLng = new L.LatLng(0, 0);
+  // Convert coordinates to array format for MapContainer
+  const defaultCenter: [number, number] = [0, 0];
   const defaultZoom = 2;
 
   return (
@@ -43,11 +43,11 @@ export default function LocationMap({ locations }: LocationMapProps) {
         scrollWheelZoom={false}
       >
         <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         {locations.map((location) => {
-          const position = new L.LatLng(location.latitude, location.longitude);
+          const position: [number, number] = [location.latitude, location.longitude];
           return (
             <Marker
               key={location.id}
