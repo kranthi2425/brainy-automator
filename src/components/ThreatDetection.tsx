@@ -1,8 +1,9 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { Threat, ThreatSeverity } from "@/types/cdr";
+import { Threat, ThreatSeverity, DetectionMethod } from "@/types/cdr";
 
 export default function ThreatDetection() {
   const [threats, setThreats] = useState<Threat[]>([]);
@@ -18,7 +19,12 @@ export default function ThreatDetection() {
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'threats' },
         (payload) => {
-          setThreats(current => [...current, payload.new as Threat]);
+          const newThreat = {
+            ...payload.new,
+            severity: payload.new.severity.toLowerCase() as ThreatSeverity,
+            detection_method: payload.new.detection_method.toLowerCase() as DetectionMethod
+          };
+          setThreats(current => [...current, newThreat as Threat]);
         }
       )
       .subscribe();
@@ -40,10 +46,11 @@ export default function ThreatDetection() {
       return;
     }
 
-    // Cast the severity to ensure it matches the ThreatSeverity type
+    // Cast both severity and detection_method to ensure they match the expected types
     const typedThreats = data.map(threat => ({
       ...threat,
-      severity: threat.severity.toLowerCase() as ThreatSeverity
+      severity: threat.severity.toLowerCase() as ThreatSeverity,
+      detection_method: threat.detection_method.toLowerCase() as DetectionMethod
     }));
     
     setThreats(typedThreats);
