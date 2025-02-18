@@ -29,28 +29,26 @@ interface LocationMapProps {
   }>;
 }
 
-// Component to handle map initialization
-function MapInitializer() {
+// Component to handle map initialization and bounds
+function MapInitializer({ locations }: LocationMapProps) {
   const map = useMap();
+  
   useEffect(() => {
-    // Add zoom controls to the map
-    map.zoomControl.setPosition('topright');
-    // Fit bounds to show all markers if there are any
-    const bounds = map.getBounds();
-    if (bounds) {
-      map.fitBounds(bounds.pad(0.1));
+    if (locations.length > 0) {
+      const bounds = L.latLngBounds(
+        locations.map(loc => [loc.latitude, loc.longitude])
+      );
+      map.fitBounds(bounds, { padding: [50, 50] });
     }
-  }, [map]);
+  }, [locations, map]);
+  
   return null;
 }
 
 export default function LocationMap({ locations }: LocationMapProps) {
   const [isLoading, setIsLoading] = useState(true);
-  const defaultPosition = { lat: 0, lng: 0 };
-  const defaultZoom = 2;
 
   useEffect(() => {
-    // Simulate loading time for map initialization
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 500);
@@ -71,25 +69,25 @@ export default function LocationMap({ locations }: LocationMapProps) {
   return (
     <div className="h-[600px] w-full rounded-md border relative overflow-hidden">
       <MapContainer
-        style={{ width: '100%', height: '100%' }}
-        center={[defaultPosition.lat, defaultPosition.lng]}
-        zoom={defaultZoom}
+        style={{ height: "100%", width: "100%" }}
+        zoom={13}
         scrollWheelZoom={true}
-        className="z-0"
+        whenCreated={(map) => {
+          map.zoomControl.setPosition('topright');
+        }}
       >
-        <MapInitializer />
+        <MapInitializer locations={locations} />
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         {locations.map((location) => (
           <Marker
             key={location.id}
             position={[location.latitude, location.longitude]}
           >
-            <Popup className="rounded-lg shadow-lg">
+            <Popup>
               <div className="p-2">
-                <h3 className="font-bold text-base">{location.customer_name}</h3>
+                <h3 className="font-semibold">{location.customer_name}</h3>
                 <p className="text-sm text-gray-600 mt-1">{location.location_type}</p>
                 <div className="text-xs text-gray-500 mt-2">
                   <p>Lat: {location.latitude.toFixed(6)}</p>
