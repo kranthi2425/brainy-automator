@@ -40,6 +40,7 @@ function MapInitializer({ locations }: LocationMapProps) {
       );
       map.fitBounds(bounds, { padding: [50, 50] });
     }
+    map.zoomControl.setPosition('topright');
   }, [locations, map]);
   
   return null;
@@ -66,15 +67,15 @@ export default function LocationMap({ locations }: LocationMapProps) {
     );
   }
 
+  // Default center position (will be overridden by MapInitializer)
+  const defaultCenter: [number, number] = [0, 0];
+
   return (
     <div className="h-[600px] w-full rounded-md border relative overflow-hidden">
       <MapContainer
         style={{ height: "100%", width: "100%" }}
-        zoom={13}
+        center={defaultCenter}
         scrollWheelZoom={true}
-        whenCreated={(map) => {
-          map.zoomControl.setPosition('topright');
-        }}
       >
         <MapInitializer locations={locations} />
         <TileLayer
