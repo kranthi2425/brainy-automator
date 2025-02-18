@@ -9,6 +9,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { PlatformType, PrivacyLevel } from "@/types/cdr";
 import { DateRange } from "react-day-picker";
 
@@ -21,6 +23,8 @@ interface CallFiltersProps {
   setPrivacyLevel: (value: PrivacyLevel | "all") => void;
   searchQuery: string;
   setSearchQuery: (value: string) => void;
+  isRegexSearch: boolean;
+  setIsRegexSearch: (value: boolean) => void;
 }
 
 export default function CallFilters({
@@ -32,12 +36,15 @@ export default function CallFilters({
   setPrivacyLevel,
   searchQuery,
   setSearchQuery,
+  isRegexSearch,
+  setIsRegexSearch,
 }: CallFiltersProps) {
   const resetFilters = () => {
     setDateRange(undefined);
     setPlatform("all");
     setPrivacyLevel("all");
     setSearchQuery("");
+    setIsRegexSearch(false);
   };
 
   return (
@@ -73,12 +80,22 @@ export default function CallFilters({
           <SelectItem value="sensitive">Sensitive</SelectItem>
         </SelectContent>
       </Select>
-      <div className="flex-1">
-        <Input
-          placeholder="Search by caller or callee ID"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
+      <div className="flex-1 space-y-2">
+        <div className="relative">
+          <Input
+            placeholder={isRegexSearch ? "Enter regex pattern" : "Search with * for wildcards"}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="regex-mode"
+            checked={isRegexSearch}
+            onCheckedChange={setIsRegexSearch}
+          />
+          <Label htmlFor="regex-mode">Regex search mode</Label>
+        </div>
       </div>
       <Button onClick={resetFilters} variant="outline">
         Reset Filters

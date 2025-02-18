@@ -21,6 +21,7 @@ export default function CDRModule() {
   const [platform, setPlatform] = useState<PlatformType | "all">("all");
   const [privacyLevel, setPrivacyLevel] = useState<PrivacyLevel | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [isRegexSearch, setIsRegexSearch] = useState(false);
   const { toast } = useToast();
 
   const fetchCalls = async () => {
@@ -43,9 +44,19 @@ export default function CDRModule() {
       }
 
       if (searchQuery) {
-        query = query.or(
-          `caller_id.ilike.%${searchQuery}%,callee_id.ilike.%${searchQuery}%`
-        );
+        // Handle regex/wildcard search
+        if (isRegexSearch) {
+          // Use ~ for regex match in Postgres
+          query = query.or(
+            `caller_id.~ .${searchQuery},callee_id.~ .${searchQuery}`
+          );
+        } else {
+          // Convert wildcard * to SQL LIKE % pattern
+          const likePattern = searchQuery.replace(/\*/g, '%');
+          query = query.or(
+            `caller_id.ilike.${likePattern},callee_id.ilike.${likePattern}`
+          );
+        }
       }
 
       const { data, error } = await query.order("start_time", {
@@ -121,7 +132,7 @@ export default function CDRModule() {
 
   useEffect(() => {
     fetchCalls();
-  }, [dateRange, platform, privacyLevel, searchQuery]);
+  }, [dateRange, platform, privacyLevel, searchQuery, isRegexSearch]);
 
   return (
     <Card>
@@ -142,6 +153,8 @@ export default function CDRModule() {
             setPrivacyLevel={setPrivacyLevel}
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
+            isRegexSearch={isRegexSearch}
+            setIsRegexSearch={setIsRegexSearch}
           />
           <CallTable calls={calls} loading={loading} />
         </div>
