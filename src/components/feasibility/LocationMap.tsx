@@ -29,24 +29,23 @@ interface LocationMapProps {
 }
 
 export default function LocationMap({ locations }: LocationMapProps) {
-  // Convert coordinates to array format for MapContainer
-  const defaultCenter = L.latLng(0, 0);
+  const defaultPosition: [number, number] = [0, 0]; // Using tuple type for coordinates
   const defaultZoom = 2;
 
   return (
     <div className="h-[600px] w-full rounded-md border">
       <MapContainer
         style={{ width: '100%', height: '100%' }}
-        center={defaultCenter}
+        center={defaultPosition}
         zoom={defaultZoom}
         scrollWheelZoom={false}
       >
         <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         {locations.map((location) => {
-          const position = L.latLng(location.latitude, location.longitude);
+          const position: [number, number] = [location.latitude, location.longitude];
           return (
             <Marker
               key={location.id}
